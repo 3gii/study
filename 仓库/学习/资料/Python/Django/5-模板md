@@ -1,0 +1,186 @@
+#### 配置
+
+> 在settings.py配置文件中修改TEMPLATES配置项的DIRS值
+
+`TEMPLATES = ['DIRS': [os.path.join(BASE_DIR, 'templates')]]`
+
+#### 定义模板
+
+> 在templates中新建一个模板文件，如index.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    {{ city }}
+</body>
+</html>
+```
+
+#### 渲染模板
+
+1. 找到模板loader.get_template(模板文件在模板目录中的相对路径)->返回模板文件对象
+2. 渲染模板 模板对象`render(context=None, request=None)`->返回渲染后的html文本字符串context为模板变量字典，默认为None，request为请求对象，默认为None
+
+```python
+def test_template(request):
+    template = loader.get_template('index.html')
+    return HttpResponse(template.render(context={'city': '北京'}))
+    # return render(request, 'index.html', context={'city': '北京'})
+```
+
+#### 模板语法
+
+1.模板变量
+
+```python
+def test_template(request):
+    context = {
+        'city': '北京',
+        'adict': {
+            'name': '西游记',
+            'author': '吴承恩',
+        },
+        'alist': [1, 2, 3, 4, 5]
+    }
+    return render(request, 'index.html', context=context)
+
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    {{ city }}
+<h1>{{ adict.name }}</h1>
+<h1>{{ adict.author }}</h1>
+<h1>{{ alist.0 }}</h1>
+</body>
+</html>
+```
+
+#### 模板语法
+
+1. for循环
+
+   ```python
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <title>Title</title>
+   </head>
+   <body>
+       {{ city }}
+   <h1>{{ adict.name }}</h1>
+   <h1>{{ adict.author }}</h1>
+       <ul>
+           {% for item in alist %}
+               {{ forloop.counter }}
+   
+               <li>{{ item }}</li>
+           {% empty %}
+               <h1>列表为空</h1>
+           {% endfor %}
+   
+       </ul>
+   </body>
+   </html>
+   ```
+
+2. if条件
+
+   ```python
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <title>Title</title>
+   </head>
+   <body>
+       {{ city }}
+   <h1>{{ adict.name }}</h1>
+   <h1>{{ adict.author }}</h1>
+       <ul>
+           {% for item in alist %}
+               {{ forloop.counter }}
+               {% if item > 2 %}
+               <li>{{ item }}</li>
+               {% endif %}
+           {% empty %}
+               <h1>列表为空</h1>
+           {% endfor %}
+   
+       </ul>
+   </body>
+   </html>
+   ```
+
+#### 过滤器
+
+1. 语法
+   `变量 | 过滤器: 参数`
+
+2. 常用过滤器
+
+   * safe， 禁用转义
+
+   * length， 长度
+
+   * default，默认值
+
+   * date，日期
+
+     * Y年，格式为4位，y表示两位
+     * m月，格式为01,02等
+     * d日，格式为01,02等
+     * j日，格式为1,2等
+     * H时，24进制，h表示12进制
+     * i分，为0-59
+     * s秒，0-59
+
+     `value|date:"Y年m月j日 H时i分s秒"`
+
+3. 注释
+
+   * 单行注释
+     `{# 注释内容 #}`
+
+   * 多行注释
+
+     ```html
+     {% comment %}
+     ...
+     {% endcomment %}
+     ```
+
+#### 模板继承
+
+* 父模板
+
+  > 父模板可以使用上下文传递过来的数据
+
+  ```html
+  {% block 名称 %}
+  ...
+  {% endblock 名称 %}
+  ```
+
+* 子模板
+
+  ````html
+  {% extends "父模板路径" %}
+  
+  {% block 名称 %}
+  	{{block.super}
+  {% endblock 名称 %}
+  ````
+
